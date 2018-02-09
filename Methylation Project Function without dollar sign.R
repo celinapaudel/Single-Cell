@@ -1,0 +1,83 @@
+setwd("/home/local/ESERVICES/cp6cc/Documents/DNA Methylation")
+
+findMatches <- function(match) {
+  
+  #Import data
+  methyl_data <- match
+  
+  #combine methylated columns into one string
+  methyl_data[,8] <- paste(methyl_data[,4], methyl_data[,5])
+  
+  View(methyl_data)
+  #Remove all "1 1"
+  methyl_data = methyl_data[methyl_data[,8] != "1 1",]
+  
+  #Add methylated data of previous row to current row
+  V4 <- methyl_data[,4]
+  V4 <- c(V4[-nrow(methyl_data)])
+  methyl_data[,9] <- paste(c(0,V4))
+  V5 <- methyl_data[,5]
+  V5 <- c(V5[-nrow(methyl_data)])
+  methyl_data[,10] <- paste(c(0,V5))
+  
+  #Include location of previous row in current row
+  values <- methyl_data[,2]
+  values <- c(values[-(NROW(values))])
+  methyl_data[,11] <- paste(c(0,values))
+  
+  #Subtract distance values
+  methyl_data[,2] <- (sapply(methyl_data[,2], as.numeric))
+  methyl_data[,11] <- (sapply(methyl_data[,11], as.numeric))
+  methyl_data[,12] <- (methyl_data[,2] - methyl_data[,11])
+  
+  #make distance of first item 0
+  methyl_data[1, 12] = 0
+  
+  #Create a new column that determines matches
+  methyl_data[,13] <- ((methyl_data[,4] & methyl_data[,9] > 0) | (methyl_data[,5] & methyl_data[,10] > 0))
+  methyl_data[,13] <- (sapply(methyl_data[,13], as.numeric))
+  
+  #Get rid of distance values that are less than 0
+  methyl_data = methyl_data[order(methyl_data[,12]),]
+  methyl_data = methyl_data[methyl_data[,12] > 0,]
+  
+  #Create a new list with unique distance values
+  distance <- unique(methyl_data[,12])
+  
+  View(methyl_data)
+  
+  #Count how many of each distance and how many matches there are
+  total = c()
+  matches = c()
+  
+  dl = length(distance)
+  ml = length(methyl_data$distance)
+  #Loop doesn't work properly
+  for (d in 1:dl) {
+    tcounter = 0
+    mcounter = 0
+    for (x in 1:ml){
+      if (distance[d] == methyl_data[x, 12]) {
+        tcounter <- tcounter + 1
+        if (methyl_data[x, 13] == 1) {
+          mcounter <- mcounter + 1
+        }
+      }
+    }
+    total = c(total, tcounter)
+    matches = c(matches, tcounter)
+  }
+  
+  
+  #Create a table with the frequency of distances and matches
+  table = cbind(distance, total, matches)
+  
+  #Add a column to table with percentage of matches
+  table$percentage = (table$matches)/(table$total)
+  
+}
+
+md <- read.table("GSM1589192_K562.1_2.txt")
+subsection <- md[1:50,]
+
+findMatches(subsection)
