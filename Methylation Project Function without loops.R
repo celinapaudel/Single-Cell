@@ -61,6 +61,9 @@ findMatches <- function(match) {
   final = data.frame(distance=unique(df$distance),
              frequency=with(df, tapply(match, distance, length)),
              matches=with(df, tapply(match, distance, sum)))
+  
+  final[,4] = final[,3]/final[,2]
+  names(final)[4] = "Match Percentage"
   View(final)
 }
 
