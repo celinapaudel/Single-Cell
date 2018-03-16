@@ -51,33 +51,46 @@ findMatches <- function(match) {
   matches = c()
   
   dl = length(distance)
-  ml = length(methyl_data$distance)
-  #Loop doesn't work properly
+  ml = length(methyl_data[,12])
+  
+  match = FALSE
+  tcounter = 0
+  mcounter = 0
   for (d in 1:dl) {
-    tcounter = 0
-    mcounter = 0
     for (x in 1:ml){
       if (distance[d] == methyl_data[x, 12]) {
+        match = TRUE
         tcounter <- tcounter + 1
         if (methyl_data[x, 13] == 1) {
           mcounter <- mcounter + 1
         }
       }
+      if(d== dl && x ==ml) {
+        total = c(total, tcounter)
+        matches = c(matches, mcounter)
+      }
+      if((distance[d] != methyl_data[x, 12]) && match == TRUE) {
+        match = FALSE
+        total = c(total, tcounter)
+        matches = c(matches, mcounter)
+        tcounter =0
+        mcounter =0
+      }
+      
     }
-    total = c(total, tcounter)
-    matches = c(matches, tcounter)
+    
+  
+    
   }
   
-  
-  #Create a table with the frequency of distances and matches
-  table = cbind(distance, total, matches)
-  
-  #Add a column to table with percentage of matches
-  table$percentage = (table$matches)/(table$total)
+  View(distance)
+  #Create a table with the frequency of distances and matches and percentage of matches
+  percentage = (matches/total)
+  table = cbind(distance, total, matches, percentage)
+  View(table)
   
 }
 
 md <- read.table("GSM1589192_K562.1_2.txt")
 subsection <- md[1:50,]
-
-findMatches(subsection)
+findMatches(md)
