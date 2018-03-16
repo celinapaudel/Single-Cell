@@ -58,15 +58,16 @@ findMatches <- function(match) {
   distance = df[,1]
   match = df[,2]
  
-  final = data.frame(distance=unique(df$distance),
+  final <<- data.frame(distance=unique(df$distance),
              frequency=with(df, tapply(match, distance, length)),
              matches=with(df, tapply(match, distance, sum)))
   
-  final[,4] = final[,3]/final[,2]
-  names(final)[4] = "Match Percentage"
-  View(final)
+  final[,4] <<- final[,3]/final[,2]
+  
 }
 
 md <- read.table("GSM1589192_K562.1_2.txt")
 subsection <- md[1:50,]
 findMatches(md)
+subset = final[1:10000,]
+plot(subset[,1], subset[,4], xlab = "Distance", ylab = "Percentage of Matches")
